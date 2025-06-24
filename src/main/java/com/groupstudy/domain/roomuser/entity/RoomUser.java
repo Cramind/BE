@@ -8,13 +8,13 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Entity
-@Table(name = "project_user")
+@Table(name = "room_user")
 @Getter
 @Builder
 public class RoomUser extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "project_user_id")
+    @Column(name = "room_user_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
