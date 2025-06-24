@@ -13,11 +13,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomUserRepositoryImpl implements CustomUserRepository {
     private final JPAQueryFactory queryFactory;
+
     @Override
     public List<User> findByEmails(List<String> emails) {
         QUser qUser = QUser.user;
         return queryFactory.selectFrom(qUser)
                 .where(qUser.email.in(emails))
                 .fetch();
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        QUser qUser = QUser.user;
+        return queryFactory.selectFrom(qUser)
+                .where(qUser.email.eq(email))
+                .fetchOne();
     }
 }

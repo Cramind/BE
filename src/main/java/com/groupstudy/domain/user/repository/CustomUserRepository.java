@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface CustomUserRepository {
     List<User> findByEmails(List<String> email);
+    User findByEmail(String email);
 }
