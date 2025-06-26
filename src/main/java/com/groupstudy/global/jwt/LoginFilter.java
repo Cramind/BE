@@ -27,12 +27,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
-    private final UserRepository userRepository;
 
     public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, CookieUtil cookieUtil, UserRepository userRepository){
         this.jwtUtil = jwtUtil;
         this.cookieUtil = cookieUtil;
-        this.userRepository = userRepository;
         super.setAuthenticationManager(authenticationManager);
     }
 
@@ -56,19 +54,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                            FilterChain chain, Authentication authentication)
-            throws IOException, ServletException {
+                                            FilterChain chain, Authentication authentication) {
         log.info("Authentication successful...");
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String email = userDetails.getEmail();
-        try {
-            response.addHeader("access", jwtUtil.createAccess(email));
-            response.addHeader("refresh", jwtUtil.createRefresh(email));
-        } catch (Exception e) {
-            log.error("Error generating JWT: ", e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        }
+
+        response.addCookie(cookieUtil.createCookie("access", jwtUtil.createAccess(email)));
         response.addCookie(cookieUtil.createCookie("refresh", jwtUtil.createRefresh(email)));
         response.setStatus(HttpStatus.OK.value());
     }
