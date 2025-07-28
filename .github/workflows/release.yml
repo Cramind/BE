@@ -74,6 +74,9 @@ jobs:
             AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
             AWS_REGION=${{ secrets.AWS_REGION }}
             PAT_TOKEN=${{ secrets.PAT_TOKEN }}
+            MYSQL_HOST=${{ secrets.MYSQL_HOST }}
+            MYSQL_USER=${{ secrets.MYSQL_USER }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
 
             sudo docker network create --driver bridge app-network || true
 
@@ -91,4 +94,7 @@ jobs:
               --network app-network \
               -p 8080:8080 \
               -e PAT_TOKEN=$PAT_TOKEN \
+              -e MYSQL_HOST=MYSQL_HOST \
+              -e MYSQL_USER=MYSQL_USER \
+              -e MYSQL_PASSWORD=$MYSQL_PASSWORD \
               $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG
