@@ -68,7 +68,6 @@ jobs:
           host: ${{ secrets.DEPLOY_SERVER_HOST }}
           username: ${{ secrets.DEPLOY_SERVER_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          target: "~"
 
       - name: 서버에 SSH 접속하여 Docker 실행
         uses: appleboy/ssh-action@v0.1.5

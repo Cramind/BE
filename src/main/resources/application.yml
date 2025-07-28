@@ -23,3 +23,7 @@ jwt:
 github:
   api-url: https://api.github.com
   token: ${PAT_TOKEN}
+
+server:
+  port: 8080
+  address: 0.0.0.0
