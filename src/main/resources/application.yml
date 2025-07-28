@@ -19,3 +19,7 @@ jwt:
   secret: "jfsgkhdsjkweoiruwqejkrfbhnsadkjlfghbwerqewrsdfgdsfagbdf"
   access-expiration: 3600
   refresh-expiration: 8640
+
+github:
+  api-url: https://api.github.com
+  token: ${PAT_TOKEN}
