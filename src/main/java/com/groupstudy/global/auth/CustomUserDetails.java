@@ -20,6 +20,8 @@ public class CustomUserDetails implements UserDetails {
 
     private User user;
 
+    public Long getUserId() { return user.getId(); }
+
     public String getEmail() {
         return user.getEmail();
     }

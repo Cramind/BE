@@ -73,7 +73,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/oauth2/**","/register/*","/login", "/swagger-ui/**",    // Swagger UI 관련 경로
                                 "/v3/api-docs/**","/csrf-token", "/project/**", "/doc/ws", "/doc/ws/**", "/document/**", "/editing", "/notification/**",
-                                "/mypage/email/avail","/mypage/password/new","/mypage/email/check","/roomusers/**", "/users/signup").permitAll()
+                                "/mypage/email/avail","/mypage/password/new","/mypage/email/check","/roomusers/**", "/users/signup", "/api/todo/**").permitAll()
                         .anyRequest().authenticated()
                 );
         http
@@ -90,7 +90,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:63342"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:63342", "http://3.107.19.34"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-CSRF-TOKEN"));
         configuration.addExposedHeader("access");

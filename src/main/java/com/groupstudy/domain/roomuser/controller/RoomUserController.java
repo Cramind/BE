@@ -1,12 +1,11 @@
 package com.groupstudy.domain.roomuser.controller;
 
-import com.groupstudy.domain.roomuser.dto.request.RoomUserInviteRequest;
+import com.groupstudy.domain.roomuser.dto.response.StudyRoomListResponse;
 import com.groupstudy.domain.roomuser.service.RoomUserCommandService;
+import com.groupstudy.domain.roomuser.service.RoomUserQueryService;
 import com.groupstudy.global.auth.CustomUserDetails;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(value = "http://localhost:5173")
 public class RoomUserController {
     private final RoomUserCommandService roomUserCommandService;
+    private final RoomUserQueryService roomUserQueryService;
 
 
     @PostMapping("/{roomId}/code")
@@ -28,4 +28,10 @@ public class RoomUserController {
                                  @AuthenticationPrincipal CustomUserDetails customUserDetails){
         roomUserCommandService.insertRoomUser(code, customUserDetails);
     }
+
+//    @GetMapping
+//    public StudyRoomListResponse getStudyRoomParticipatedIn(
+//            @AuthenticationPrincipal CustomUserDetails customUserDetails){
+//        return roomUserQueryService.selectParticipatedStudyRooms(customUserDetails);
+//    }
 }
