@@ -62,13 +62,6 @@ jobs:
       PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
 
     steps:
-      - name: 서버에 환경변수 전송
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.DEPLOY_SERVER_HOST }}
-          username: ${{ secrets.DEPLOY_SERVER_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-
       - name: 서버에 SSH 접속하여 Docker 실행
         uses: appleboy/ssh-action@v0.1.5
         with:
