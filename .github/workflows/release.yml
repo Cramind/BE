@@ -65,7 +65,7 @@ jobs:
       MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
 
     steps:
-      - name: SSH into EC2 and deploy
+      - name: 서버에 SSH 접속하여 Docker 실행
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.DEPLOY_SERVER_HOST }}
@@ -74,19 +74,26 @@ jobs:
           script: |
             IMAGE_NAME=gs
             IMAGE_TAG=${{ github.sha }}
-            
+            AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
+            PAT_TOKEN=${{ secrets.PAT_TOKEN }}
+            MYSQL_HOST=${{ secrets.MYSQL_HOST }}
+            MYSQL_USER=${{ secrets.MYSQL_USER }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+
             sudo docker network create --driver bridge app-network || true
-            sudo docker stop  $IMAGE_NAME || true
-            sudo docker rm    $IMAGE_NAME || true
-            
-            sudo aws ecr get-login-password --region $AWS_REGION | \
-              sudo docker login --username AWS --password-stdin \
-                $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-            
+
+            sudo docker stop $IMAGE_NAME || true
+            sudo docker rm $IMAGE_NAME || true
+
+            sudo docker login --username AWS \
+              --password $(aws ecr get-login-password --region $AWS_REGION) \
+              $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
             sudo docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG
-            
+
             sudo docker run -d \
-              --name    $IMAGE_NAME \
+              --name $IMAGE_NAME \
               --network app-network \
               -p 8080:8080 \
               -e PAT_TOKEN=$PAT_TOKEN \
