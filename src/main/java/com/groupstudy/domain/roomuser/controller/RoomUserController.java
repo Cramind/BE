@@ -4,8 +4,10 @@ import com.groupstudy.domain.roomuser.dto.response.StudyRoomListResponse;
 import com.groupstudy.domain.roomuser.service.RoomUserCommandService;
 import com.groupstudy.domain.roomuser.service.RoomUserQueryService;
 import com.groupstudy.global.auth.CustomUserDetails;
+import com.groupstudy.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,14 +21,15 @@ public class RoomUserController {
 
 
     @PostMapping("/{roomId}/code")
-    public String getOrCreateInviteCode(@PathVariable Long roomId){
-        return roomUserCommandService.getOrCreateInviteCode(roomId);
+    public ResponseEntity<ApiResponse<String>> getOrCreateInviteCode(@PathVariable Long roomId){
+        return ResponseEntity.ok(ApiResponse.onSuccess(roomUserCommandService.getOrCreateInviteCode(roomId)));
     }
 
     @PostMapping("/{code}")
-    public void inviteUserToRoom(@PathVariable String code,
+    public ResponseEntity<ApiResponse<Void>> inviteUserToRoom(@PathVariable String code,
                                  @AuthenticationPrincipal CustomUserDetails customUserDetails){
         roomUserCommandService.insertRoomUser(code, customUserDetails);
+        return ResponseEntity.ok(ApiResponse.onSuccessVoid());
     }
 
 //    @GetMapping

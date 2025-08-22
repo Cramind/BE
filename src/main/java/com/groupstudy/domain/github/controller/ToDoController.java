@@ -5,6 +5,7 @@ import com.groupstudy.domain.github.dto.*;
 import com.groupstudy.domain.github.dto.request.OrgInvitationRequest;
 import com.groupstudy.domain.github.dto.request.OrgRepoRequest;
 import com.groupstudy.domain.github.dto.request.RepoTemplateRequest;
+import com.groupstudy.global.response.ApiResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,17 +23,19 @@ public class ToDoController {
     private final GitHubClient gitHubClient;
 
     @GetMapping("/org")
-    public List<GitHubOrgDto> getOrgList(){
-        return gitHubClient.getOrgs();
+    public ResponseEntity<ApiResponse<List<GitHubOrgDto>>>getOrgList(){
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getOrgs()));
     }
 
     @PostMapping("/org/repo")
-    public void postOrgRepo(@RequestBody OrgRepoRequest request){
+    public ResponseEntity<ApiResponse<Void>> postOrgRepo(@RequestBody OrgRepoRequest request){
         gitHubClient.createRepositoryInOrg(request);
+        return ResponseEntity.ok(ApiResponse.onSuccessVoid());
     }
 
     @PostMapping("/org/repo/template")
-    public ResponseEntity<Void> uploadTemplates(
+    public ResponseEntity<ApiResponse<Void>> uploadTemplates(
             @RequestPart("files") List<MultipartFile> files,
             @RequestPart("metadataList") List<RepoTemplateRequest> metadataList) throws IOException {
 
@@ -47,44 +50,45 @@ public class ToDoController {
             gitHubClient.uploadUserIssueTemplate(file, metadata);
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.onSuccessVoid());
     }
 
     @PostMapping("/org/invite/{orgName}")
-    public void postOrgRepoTemplate(
+    public ResponseEntity<ApiResponse<Void>> postOrgRepoTemplate(
             @PathVariable String orgName,
             @RequestBody OrgInvitationRequest orgInvitationRequest){
         gitHubClient.inviteUsersToOrg(orgName, orgInvitationRequest);
+        return ResponseEntity.ok(ApiResponse.onSuccessVoid());
     }
 
     @GetMapping("/issues")
-    public List<GitHubIssueDto> getGithubIssues(
+    public ResponseEntity<ApiResponse<List<GitHubIssueDto>>> getGithubIssues(
             @RequestParam String owner,
             @RequestParam String repo
     ) {
-        return gitHubClient.getIssues(owner, repo);
+        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getIssues(owner, repo)));
     }
 
     @GetMapping("/prs")
-    public List<GitHubPullRequestDto> getGithubPulls(
+    public ResponseEntity<ApiResponse<List<GitHubPullRequestDto>>> getGithubPulls(
             @RequestParam String owner,
             @RequestParam String repo
     ) {
-        return gitHubClient.getPullRequests(owner, repo);
+        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getPullRequests(owner, repo)));
     }
     @GetMapping("/reviews")
-    public List<GitHubReviewCommentDto> getReviews(
+    public ResponseEntity<ApiResponse<List<GitHubReviewCommentDto>>>  getReviews(
             @RequestParam String owner,
             @RequestParam String repo
     ) {
-        return gitHubClient.fetchReviewComments(owner, repo);
+        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.fetchReviewComments(owner, repo)));
     }
     @GetMapping
-    public ReviewStatsResponse getReviewStats(
+    public ResponseEntity<ApiResponse<ReviewStatsResponse>> getReviewStats(
             @RequestParam String owner,
             @RequestParam String repo,
             @RequestParam(defaultValue = "10") int prCount
     ) {
-        return gitHubClient.fetchReviewStats(owner, repo, prCount);
+        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.fetchReviewStats(owner, repo, prCount)));
     }
 }
