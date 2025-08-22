@@ -1,6 +1,6 @@
 package com.groupstudy.global.response.status;
 
-import com.opendata.global.response.BaseStatusCode;
+import com.groupstudy.global.response.BaseStatusCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
