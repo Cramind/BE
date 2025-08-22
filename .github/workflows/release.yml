@@ -1,103 +1,103 @@
-name: CI / CD
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  CI:
-    runs-on: ubuntu-latest
-
-    env:
-      IMAGE_NAME: gs
-      IMAGE_TAG: ${{ github.sha }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: 21
-          distribution: 'adopt'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build with Gradle (Skip Test)
-        run: ./gradlew build --exclude-task test
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
-          docker login --username AWS \
-            --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-
-      - name: Build and Push Docker Image to ECR
-        run: |
-          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/gs:${{ env.IMAGE_TAG }}
-          docker build --build-arg SPRING_PROFILE=prod -t $IMAGE_URI .
-          docker push $IMAGE_URI
-  CD:
-    runs-on: ubuntu-latest
-    needs: CI
-
-    env:
-      IMAGE_NAME: gs
-      IMAGE_TAG: ${{ github.sha }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
-      MYSQL_USER: ${{ secrets.MYSQL_USER }}
-      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-
-    steps:
-      - name: 서버에 SSH 접속하여 Docker 실행
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.DEPLOY_SERVER_HOST }}
-          username: ${{ secrets.DEPLOY_SERVER_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            IMAGE_NAME=gs
-            IMAGE_TAG=${{ github.sha }}
-            AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
-            AWS_REGION=${{ secrets.AWS_REGION }}
-            PAT_TOKEN=${{ secrets.PAT_TOKEN }}
-            MYSQL_HOST=${{ secrets.MYSQL_HOST }}
-            MYSQL_USER=${{ secrets.MYSQL_USER }}
-            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-
-            sudo docker network create --driver bridge app-network || true
-
-            sudo docker stop $IMAGE_NAME || true
-            sudo docker rm $IMAGE_NAME || true
-
-            sudo docker login --username AWS \
-              --password $(aws ecr get-login-password --region $AWS_REGION) \
-              $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-
-            sudo docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG
-
-            sudo docker run -d \
-              --name $IMAGE_NAME \
-              --network app-network \
-              -p 8080:8080 \
-              -e PAT_TOKEN=$PAT_TOKEN \
-              -e MYSQL_HOST=$MYSQL_HOST \
-              -e MYSQL_USER=$MYSQL_USER \
-              -e MYSQL_PASSWORD=$MYSQL_PASSWORD \
-              $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG
+#name: CI / CD
+#
+#on:
+#  push:
+#    branches: [main]
+#
+#jobs:
+#  CI:
+#    runs-on: ubuntu-latest
+#
+#    env:
+#      IMAGE_NAME: gs
+#      IMAGE_TAG: ${{ github.sha }}
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Set up JDK
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: 21
+#          distribution: 'adopt'
+#
+#      - name: Grant execute permission for gradlew
+#        run: chmod +x gradlew
+#
+#      - name: Setup Gradle
+#        uses: gradle/actions/setup-gradle@v4
+#
+#      - name: Build with Gradle (Skip Test)
+#        run: ./gradlew build --exclude-task test
+#
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v2
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ secrets.AWS_REGION }}
+#
+#      - name: Login to Amazon ECR
+#        id: login-ecr
+#        run: |
+#          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+#          docker login --username AWS \
+#            --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+#
+#      - name: Build and Push Docker Image to ECR
+#        run: |
+#          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/gs:${{ env.IMAGE_TAG }}
+#          docker build --build-arg SPRING_PROFILE=prod -t $IMAGE_URI .
+#          docker push $IMAGE_URI
+#  CD:
+#    runs-on: ubuntu-latest
+#    needs: CI
+#
+#    env:
+#      IMAGE_NAME: gs
+#      IMAGE_TAG: ${{ github.sha }}
+#      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+#      AWS_REGION: ${{ secrets.AWS_REGION }}
+#      PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+#      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+#      MYSQL_USER: ${{ secrets.MYSQL_USER }}
+#      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+#
+#    steps:
+#      - name: 서버에 SSH 접속하여 Docker 실행
+#        uses: appleboy/ssh-action@v0.1.5
+#        with:
+#          host: ${{ secrets.DEPLOY_SERVER_HOST }}
+#          username: ${{ secrets.DEPLOY_SERVER_USER }}
+#          key: ${{ secrets.DEPLOY_SSH_KEY }}
+#          script: |
+#            IMAGE_NAME=gs
+#            IMAGE_TAG=${{ github.sha }}
+#            AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+#            AWS_REGION=${{ secrets.AWS_REGION }}
+#            PAT_TOKEN=${{ secrets.PAT_TOKEN }}
+#            MYSQL_HOST=${{ secrets.MYSQL_HOST }}
+#            MYSQL_USER=${{ secrets.MYSQL_USER }}
+#            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+#
+#            sudo docker network create --driver bridge app-network || true
+#
+#            sudo docker stop $IMAGE_NAME || true
+#            sudo docker rm $IMAGE_NAME || true
+#
+#            sudo docker login --username AWS \
+#              --password $(aws ecr get-login-password --region $AWS_REGION) \
+#              $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+#
+#            sudo docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG
+#
+#            sudo docker run -d \
+#              --name $IMAGE_NAME \
+#              --network app-network \
+#              -p 8080:8080 \
+#              -e PAT_TOKEN=$PAT_TOKEN \
+#              -e MYSQL_HOST=$MYSQL_HOST \
+#              -e MYSQL_USER=$MYSQL_USER \
+#              -e MYSQL_PASSWORD=$MYSQL_PASSWORD \
+#              $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG
