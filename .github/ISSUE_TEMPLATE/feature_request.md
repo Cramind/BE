@@ -1,21 +1,3 @@
----
-name: Feature request
-about: Suggest an idea for this project
-title: "[feat]"
-labels: enhancement
-assignees: kamillcream
-
----
-
----
-name: Feature request
-about: Suggest an idea for this project
-title: "[feat]"
-labels: ''
-assignees: ''
-
----
-
 ## 📌 기능 설명
 <!-- 어떤 기능을 추가하려는지, 어떤 니즈를 해결하는지 작성해주세요. -->
 

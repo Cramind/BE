@@ -1,4 +1,4 @@
-package com.groupstudy.domain.studyroom.entity;
+package com.groupstudy.domain.team.entity;
 
 import com.groupstudy.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -21,8 +21,8 @@ public class InviteCode extends BaseEntity {
     private String code;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "studyroom_id")
-    private StudyRoom studyRoom;
+    @JoinColumn(name = "team_id")
+    private Team team;
 
     private LocalDateTime expiresAt;
 }

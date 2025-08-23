@@ -23,7 +23,7 @@ public class ToDoController {
     private final GitHubClient gitHubClient;
 
     @GetMapping("/org")
-    public ResponseEntity<ApiResponse<List<GitHubOrgDto>>>getOrgList(){
+    public ResponseEntity<ApiResponse<List<GitHubOrgDto>>> getOrgList(){
 
         return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getOrgs()));
     }

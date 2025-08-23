@@ -1,6 +1,6 @@
 package com.groupstudy.domain.roomuser.entity;
 
-import com.groupstudy.domain.studyroom.entity.StudyRoom;
+import com.groupstudy.domain.team.entity.Team;
 import com.groupstudy.domain.user.entity.User;
 import com.groupstudy.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -18,8 +18,8 @@ public class RoomUser extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "studyroom_id")
-    private StudyRoom studyRoom;
+    @JoinColumn(name = "team_id")
+    private Team parentTeam;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
