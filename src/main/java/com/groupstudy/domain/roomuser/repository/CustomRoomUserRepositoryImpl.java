@@ -19,7 +19,7 @@ public class CustomRoomUserRepositoryImpl implements CustomRoomUserRepository {
         QRoomUser qRoomUser = QRoomUser.roomUser;
 
         return queryFactory
-                .select(qRoomUser.studyRoom.id)
+                .select(qRoomUser.parentTeam.id)
                 .from(qRoomUser)
                 .where(qRoomUser.id.eq(userId))
                 .fetch();
