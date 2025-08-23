@@ -20,7 +20,7 @@ public class RoomUserController {
     private final RoomUserQueryService roomUserQueryService;
 
 
-    @PostMapping("/{roomId}/code")
+    @GetMapping("/{roomId}/code")
     public ResponseEntity<ApiResponse<String>> getOrCreateInviteCode(@PathVariable Long roomId){
         return ResponseEntity.ok(ApiResponse.onSuccess(roomUserCommandService.getOrCreateInviteCode(roomId)));
     }
