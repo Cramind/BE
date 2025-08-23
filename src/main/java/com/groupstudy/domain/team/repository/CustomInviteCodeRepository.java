@@ -1,4 +1,4 @@
-package com.groupstudy.domain.studyroom.repository;
+package com.groupstudy.domain.team.repository;
 
 public interface CustomInviteCodeRepository {
     String findByStudyRoomId(Long studyroomId);

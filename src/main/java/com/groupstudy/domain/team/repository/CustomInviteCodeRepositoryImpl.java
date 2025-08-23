@@ -1,6 +1,6 @@
-package com.groupstudy.domain.studyroom.repository;
+package com.groupstudy.domain.team.repository;
 
-import com.groupstudy.domain.studyroom.entity.QInviteCode;
+import com.groupstudy.domain.team.entity.QInviteCode;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -16,14 +16,14 @@ public class CustomInviteCodeRepositoryImpl implements CustomInviteCodeRepositor
         return queryFactory
                 .select(qInviteCode.code)
                 .from(qInviteCode)
-                .where(qInviteCode.studyRoom.id.eq(studyroomId))
+                .where(qInviteCode.team.id.eq(studyroomId))
                 .fetchFirst();
     }
 
     @Override
     public Long findStudyRoomByCode(String code) {
         QInviteCode qInviteCode = QInviteCode.inviteCode;
-        return queryFactory.select(qInviteCode.studyRoom.id)
+        return queryFactory.select(qInviteCode.team.id)
                 .from(qInviteCode)
                 .where(qInviteCode.code.eq(code))
                 .fetchOne();
