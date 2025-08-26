@@ -1,4 +1,4 @@
-package com.groupstudy.domain.roomuser.controller.validation;
+package com.groupstudy.domain.teammember.controller.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
