@@ -1,6 +1,6 @@
-package com.groupstudy.domain.roomuser.dto.request;
+package com.groupstudy.domain.teammember.dto.request;
 
-import com.groupstudy.domain.roomuser.controller.validation.ExistingEmails;
+import com.groupstudy.domain.teammember.controller.validation.ExistingEmails;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
