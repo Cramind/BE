@@ -11,10 +11,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -23,43 +24,31 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String accessToken = request.getHeader("Authorization");
-        String token = accessToken;
+
+        Optional<String> tokenOpt = CookieUtil.getAccessTokenFromRequest(request);
 
 
-        if (accessToken == null) {
-            filterChain.doFilter(request, response);
-            return;
+        if (tokenOpt.isPresent()) {
+            String token = tokenOpt.get();
+            if (!jwtUtil.isExpired(token)) {
+                String email = jwtUtil.getEmail(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                log.debug("❌ JWT 토큰 검증 실패");
+            }
+        } else {
+            log.debug("❌ access 토큰 없음, URI={}", request.getRequestURI());
         }
-
-        if(token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-
-        log.info("token: {}", token);
-        log.info("access: {}", accessToken);
-        log.info("role: {}", jwtUtil.getCategory(token));
-
-
-        try {
-            jwtUtil.isExpired(token);
-        } catch (ExpiredJwtException e) {
-            PrintWriter writer = response.getWriter();
-            writer.print("access token expired");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        String email = jwtUtil.getEmail(token);
-
-
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
         filterChain.doFilter(request, response);
     }
 }
