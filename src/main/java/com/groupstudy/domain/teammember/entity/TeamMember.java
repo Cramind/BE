@@ -1,20 +1,21 @@
-package com.groupstudy.domain.roomuser.entity;
+package com.groupstudy.domain.teammember.entity;
 
 import com.groupstudy.domain.team.entity.Team;
 import com.groupstudy.domain.user.entity.User;
 import com.groupstudy.global.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 @Entity
-@Table(name = "room_user")
+@Table(name = "team_member")
 @Getter
-@Builder
-public class RoomUser extends BaseEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class TeamMember extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "room_user_id")
+    @Column(name = "team_member_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -24,4 +25,9 @@ public class RoomUser extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public TeamMember(Team team, User user){
+        this.parentTeam = team;
+        this.user = user;
+    }
 }

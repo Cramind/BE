@@ -1,7 +1,7 @@
-package com.groupstudy.domain.roomuser.service;
+package com.groupstudy.domain.teammember.service;
 
-import com.groupstudy.domain.roomuser.entity.RoomUser;
-import com.groupstudy.domain.roomuser.repository.RoomUserRepository;
+import com.groupstudy.domain.teammember.entity.TeamMember;
+import com.groupstudy.domain.teammember.repository.TeamMemberRepository;
 import com.groupstudy.domain.team.entity.InviteCode;
 import com.groupstudy.domain.team.entity.Team;
 import com.groupstudy.domain.team.repository.InviteCodeRepository;
@@ -19,10 +19,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class RoomUserCommandService {
+public class TeamMemberCommandService {
     private final InviteCodeRepository inviteCodeRepository;
     private final TeamRepository teamRepository;
-    private final RoomUserRepository roomUserRepository;
+    private final TeamMemberRepository teamMemberRepository;
     private final UserRepository userRepository;
 
     public String getOrCreateInviteCode(Long teamId){
@@ -48,15 +48,12 @@ public class RoomUserCommandService {
 
         Team team = teamRepository.findById(studyRoomId).orElseThrow();
 
-        RoomUser roomUsers = createRoomUser(user, team);
+        TeamMember roomUsers = createRoomUser(user, team);
 
-        roomUserRepository.save(roomUsers);
+        teamMemberRepository.save(roomUsers);
     }
 
-    private RoomUser createRoomUser(User user, Team studyRoom){
-        return RoomUser.builder()
-                .user(user)
-                .parentTeam(studyRoom)
-                .build();
+    private TeamMember createRoomUser(User user, Team team){
+        return new TeamMember(team, user);
     }
 }
