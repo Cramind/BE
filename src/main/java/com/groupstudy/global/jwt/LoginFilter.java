@@ -44,7 +44,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             LoginRequest loginRequest = new ObjectMapper().readValue(messageBody, LoginRequest.class);
 
             UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword(), null);
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
 
             return getAuthenticationManager().authenticate(authToken);
         } catch (IOException e) {

@@ -1,8 +1,7 @@
-package com.groupstudy.domain.roomuser.controller;
+package com.groupstudy.domain.teammember.controller;
 
-import com.groupstudy.domain.roomuser.dto.response.StudyRoomListResponse;
-import com.groupstudy.domain.roomuser.service.RoomUserCommandService;
-import com.groupstudy.domain.roomuser.service.RoomUserQueryService;
+import com.groupstudy.domain.teammember.service.TeamMemberCommandService;
+import com.groupstudy.domain.teammember.service.TeamMemberQueryService;
 import com.groupstudy.global.auth.CustomUserDetails;
 import com.groupstudy.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,20 +14,20 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/roomusers")
 @CrossOrigin(value = "http://localhost:5173")
-public class RoomUserController {
-    private final RoomUserCommandService roomUserCommandService;
-    private final RoomUserQueryService roomUserQueryService;
+public class TeamMemberController {
+    private final TeamMemberCommandService teamMemberCommandService;
+    private final TeamMemberQueryService teamMemberQueryService;
 
 
     @GetMapping("/{roomId}/code")
     public ResponseEntity<ApiResponse<String>> getOrCreateInviteCode(@PathVariable Long roomId){
-        return ResponseEntity.ok(ApiResponse.onSuccess(roomUserCommandService.getOrCreateInviteCode(roomId)));
+        return ResponseEntity.ok(ApiResponse.onSuccess(teamMemberCommandService.getOrCreateInviteCode(roomId)));
     }
 
     @PostMapping("/{code}")
     public ResponseEntity<ApiResponse<Void>> inviteUserToRoom(@PathVariable String code,
                                  @AuthenticationPrincipal CustomUserDetails customUserDetails){
-        roomUserCommandService.insertRoomUser(code, customUserDetails);
+        teamMemberCommandService.insertRoomUser(code, customUserDetails);
         return ResponseEntity.ok(ApiResponse.onSuccessVoid());
     }
 

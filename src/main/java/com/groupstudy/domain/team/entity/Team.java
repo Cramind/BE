@@ -1,7 +1,6 @@
 package com.groupstudy.domain.team.entity;
 
-import com.groupstudy.domain.roomuser.entity.RoomUser;
-import com.groupstudy.domain.user.entity.User;
+import com.groupstudy.domain.teammember.entity.TeamMember;
 import com.groupstudy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,7 +21,7 @@ public class Team extends BaseEntity {
     private String teamDescription;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentTeam", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RoomUser> teamUsers;
+    private List<TeamMember> teamUsers;
 
     public Team(String teamName, String teamDescription){
         this.teamName = teamName;

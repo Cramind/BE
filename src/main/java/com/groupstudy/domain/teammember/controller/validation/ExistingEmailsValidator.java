@@ -1,4 +1,4 @@
-package com.groupstudy.domain.roomuser.controller.validation;
+package com.groupstudy.domain.teammember.controller.validation;
 
 import com.groupstudy.domain.user.entity.User;
 import com.groupstudy.domain.user.repository.UserRepository;

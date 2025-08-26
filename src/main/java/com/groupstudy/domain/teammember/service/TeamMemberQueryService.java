@@ -1,14 +1,14 @@
-package com.groupstudy.domain.roomuser.service;
+package com.groupstudy.domain.teammember.service;
 
-import com.groupstudy.domain.roomuser.repository.RoomUserRepository;
+import com.groupstudy.domain.teammember.repository.TeamMemberRepository;
 import com.groupstudy.domain.team.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class RoomUserQueryService {
-    private final RoomUserRepository roomUserRepository;
+public class TeamMemberQueryService {
+    private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
 //
 //    public StudyRoomListResponse selectParticipatedStudyRooms(CustomUserDetails customUserDetails){
