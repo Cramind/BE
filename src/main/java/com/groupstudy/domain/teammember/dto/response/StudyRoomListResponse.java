@@ -1,4 +1,4 @@
-package com.groupstudy.domain.roomuser.dto.response;
+package com.groupstudy.domain.teammember.dto.response;
 
 import java.util.List;
 
