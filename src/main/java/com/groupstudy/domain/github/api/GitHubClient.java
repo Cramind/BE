@@ -4,7 +4,16 @@ import com.groupstudy.domain.github.dto.*;
 import com.groupstudy.domain.github.dto.request.OrgInvitationRequest;
 import com.groupstudy.domain.github.dto.request.OrgRepoRequest;
 import com.groupstudy.domain.github.dto.request.RepoTemplateRequest;
+import com.groupstudy.domain.github.dto.response.GitHubOrgEventResponse;
+import com.groupstudy.domain.github.dto.response.GithubIssueResponse;
+import com.groupstudy.domain.github.dto.response.GithubPrResponse;
 import com.groupstudy.domain.github.util.HttpSetter;
+import com.groupstudy.domain.team.entity.Team;
+import com.groupstudy.domain.team.entity.TeamOrganization;
+import com.groupstudy.domain.team.entity.TeamRepo;
+import com.groupstudy.domain.team.repository.TeamOrgRepository;
+import com.groupstudy.domain.team.repository.TeamRepoRepository;
+import com.groupstudy.domain.team.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,12 +25,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class GitHubClient {
+
+    private final TeamRepository teamRepository;
+    private final TeamOrgRepository teamOrgRepository;
+    private final TeamRepoRepository teamRepoRepository;
 
     @Value("${github.api-url}")
     private String apiUrl;
@@ -132,24 +148,79 @@ public class GitHubClient {
         return Arrays.asList(response.getBody());
     }
 
-    public List<GitHubIssueDto> getIssues(String owner, String repo) {
-        String url = String.format("%s/repos/%s/%s/issues", apiUrl, owner, repo);
+    public GithubIssueResponse getIssues(Long teamId) {
+        Team team = teamRepository.findById(teamId).orElseThrow();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
-        headers.set("Accept", "application/vnd.github+json");
+        List<GitHubIssueDto> all = new ArrayList<>();
 
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        for (TeamOrganization org : Optional.ofNullable(team.getTeamOrganizations()).orElse(Collections.emptyList())) {
+            String owner = org.getOrgName();
+            for (TeamRepo repo : Optional.ofNullable(org.getChildrenRepos()).orElse(Collections.emptyList())) {
+                all.addAll(fetchIssues(owner, repo.getRepoName()));
+            }
+        }
 
-        ResponseEntity<GitHubIssueDto[]> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                GitHubIssueDto[].class
-        );
+         all.removeIf(dto -> dto.getPullRequest() != null);
 
-        return Arrays.asList(response.getBody());
+        return new GithubIssueResponse(all.size(), all);
     }
+
+    private List<GitHubIssueDto> fetchIssues(String owner, String repo) {
+        List<GitHubIssueDto> acc = new ArrayList<>();
+        int page = 1;
+        final int perPage = 100;
+
+        while (true) {
+            String url = String.format("%s/repos/%s/%s/issues?state=open&per_page=%d&page=%d",
+                    apiUrl, owner, repo, perPage, page);
+
+            ResponseEntity<GitHubIssueDto[]> res = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    githubEntity(),           // 공통 헤더 분리
+                    GitHubIssueDto[].class
+            );
+
+            GitHubIssueDto[] body = res.getBody();
+            if (body == null || body.length == 0) break;
+
+            acc.addAll(Arrays.asList(body));
+
+            // 마지막 페이지면 종료
+            if (body.length < perPage) break;
+            page++;
+        }
+
+        return acc;
+    }
+
+    private HttpEntity<Void> githubEntity() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token); // = headers.set("Authorization", "Bearer " + token)
+        headers.set("Accept", "application/vnd.github+json");
+        return new HttpEntity<>(headers);
+    }
+
+//    public List<GitHubIssueDto> getAssignedIssues(String owner, String repo) {
+//        String url = String.format("%s/repos/%s/%s/issues?creator=kamillcream", apiUrl, owner, repo);
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set("Authorization", "Bearer " + token);
+//        headers.set("Accept", "application/vnd.github+json");
+//
+//        HttpEntity<Void> entity = new HttpEntity<>(headers);
+//
+//        ResponseEntity<GitHubIssueDto[]> response = restTemplate.exchange(
+//                url,
+//                HttpMethod.GET,
+//                entity,
+//                GitHubIssueDto[].class
+//        );
+//
+//        return Arrays.asList(response.getBody());
+//    }
+
+
     public List<GitHubPullRequestDto> getPullRequests(String owner, String repo) {
         String url = String.format("%s/repos/%s/%s/pulls?state=all", apiUrl, owner, repo);
 
@@ -168,6 +239,150 @@ public class GitHubClient {
 
         return Arrays.asList(response.getBody());
     }
+
+    public GithubPrResponse getMyPullRequests(Long teamId) {
+        Team team = teamRepository.findById(teamId).orElseThrow();
+
+        List<GitHubPullRequestDto> all = new ArrayList<>();
+
+        for (TeamOrganization org : Optional.ofNullable(team.getTeamOrganizations()).orElse(Collections.emptyList())) {
+            String owner = org.getOrgName();
+
+            for (TeamRepo repo : Optional.ofNullable(org.getChildrenRepos()).orElse(Collections.emptyList())) {
+                String repoName = repo.getRepoName(); // getter 이름 맞춰주세요
+
+                all.addAll(fetchPullRequests(owner, repoName, "kamillcream"));
+            }
+        }
+
+        return new GithubPrResponse(all.size(), all);
+    }
+
+    private List<GitHubPullRequestDto> fetchPullRequests(String owner, String repo, String username) {
+        String url = String.format(
+                "%s/search/issues?q=type:pr+state:open+repo:%s/%s+review-requested:%s",
+                apiUrl, owner, repo, username
+        );
+
+        ResponseEntity<GitHubPRSearchResponse> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                githubEntity(),
+                GitHubPRSearchResponse.class
+        );
+
+        if (response.getBody() == null || response.getBody().getItems() == null) {
+            return Collections.emptyList();
+        }
+
+        return response.getBody().getItems();
+    }
+
+    public GitHubOrgEventResponse getIssueAndPrEvents(Long teamId) {
+        Team team = teamRepository.findById(teamId).orElseThrow();
+
+        List<GitHubOrgEventDto> all = new ArrayList<>();
+
+        for (TeamOrganization org : Optional.ofNullable(team.getTeamOrganizations()).orElse(Collections.emptyList())) {
+            String orgName = org.getOrgName();
+            all.addAll(fetchOrgIssuePrEvents(orgName));
+        }
+
+        // created_at 기준 최신순 정렬 (필드명 맞게 수정)
+        all.sort(Comparator.comparing(GitHubOrgEventDto::getCreatedAt).reversed());
+
+        return new GitHubOrgEventResponse(all.size(), all);
+    }
+
+    private List<GitHubOrgEventDto> fetchOrgIssuePrEvents(String org) {
+        final int perPage = 100;
+        int page = 1;
+
+        List<GitHubOrgEventDto> acc = new ArrayList<>();
+
+        while (true) {
+            String url = String.format("%s/orgs/%s/events?per_page=%d&page=%d", apiUrl, org, perPage, page);
+
+            ResponseEntity<GitHubOrgEventDto[]> res = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    githubEntity(),
+                    GitHubOrgEventDto[].class
+            );
+
+            GitHubOrgEventDto[] body = res.getBody();
+            if (body == null || body.length == 0) break;
+
+            Arrays.stream(body)
+                    .filter(e -> "IssuesEvent".equals(e.getType())
+                            || "PullRequestEvent".equals(e.getType())
+                            || "PullRequestReviewEvent".equals(e.getType())
+                            || "PullRequestReviewCommentEvent".equals(e.getType()))
+                    .forEach(acc::add);
+
+            if (body.length < perPage) break;
+            page++;
+        }
+
+        return acc;
+    }
+
+
+    public WeeklyDashboardResponse getStats(Long teamId, String username) {
+        Team team = teamRepository.findById(teamId).orElseThrow();
+
+        int totIssues = 0, totPrs = 0;
+        int myIssues = 0, myPrs = 0;
+
+        for (TeamOrganization org : Optional.ofNullable(team.getTeamOrganizations()).orElse(Collections.emptyList())) {
+            String orgName = org.getOrgName();
+
+            // 전체
+            totIssues  += searchIssuesPrCountOrg(orgName, "is:issue", null);
+            totPrs     += searchIssuesPrCountOrg(orgName, "is:pr", null);
+
+            // 내 기여
+            String author = "author:" + username;
+            myIssues   += searchIssuesPrCountOrg(orgName, "is:issue", author);
+            myPrs      += searchIssuesPrCountOrg(orgName, "is:pr", author);
+        }
+
+        List<WeeklyMetricWithShareDto> metrics = List.of(
+                WeeklyMetricWithShareDto.of("이슈 생성", totIssues, myIssues, pct(myIssues, totIssues)),
+                WeeklyMetricWithShareDto.of("PR 생성", totPrs, myPrs, pct(myPrs, totPrs))
+        );
+
+        return new WeeklyDashboardResponse(metrics);
+    }
+
+    private int searchIssuesPrCountOrg(String org, String kindQualifier, String extra) {
+        // org 단위 검색
+        String q = "%s+org:%s".formatted(kindQualifier, org);
+        if (extra != null && !extra.isBlank()) q += "+" + extra;
+
+        String url = "%s/search/issues?q=%s&per_page=1".formatted(apiUrl, q);
+
+        ResponseEntity<com.fasterxml.jackson.databind.JsonNode> resp =
+                restTemplate.exchange(url, HttpMethod.GET, githubEntityJson(), com.fasterxml.jackson.databind.JsonNode.class);
+
+        var body = resp.getBody();
+        return (body == null || body.get("total_count") == null) ? 0 : body.get("total_count").asInt();
+    }
+
+
+
+    private HttpEntity<Void> githubEntityJson() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.set("Accept", "application/vnd.github+json");
+        return new HttpEntity<>(headers);
+    }
+
+    private double pct(int mine, int total) {
+        return total == 0 ? 0.0 : (mine * 100.0 / total);
+    }
+
+
     public List<GitHubReviewCommentDto> fetchReviewComments(String owner, String repo) {
         String url = String.format("https://api.github.com/repos/%s/%s/pulls/comments", owner, repo);
 
@@ -191,6 +406,7 @@ public class GitHubClient {
             return Collections.emptyList();
         }
     }
+
     public ReviewStatsResponse fetchReviewStats(String owner, String repo, int prCount) {
         Map<String, UserReviewStatsDto> statsMap = new HashMap<>();
         int approved = 0;
