@@ -5,8 +5,10 @@ import com.groupstudy.domain.github.dto.*;
 import com.groupstudy.domain.github.dto.request.OrgInvitationRequest;
 import com.groupstudy.domain.github.dto.request.OrgRepoRequest;
 import com.groupstudy.domain.github.dto.request.RepoTemplateRequest;
+import com.groupstudy.domain.github.dto.response.GitHubOrgEventResponse;
+import com.groupstudy.domain.github.dto.response.GithubIssueResponse;
+import com.groupstudy.domain.github.dto.response.GithubPrResponse;
 import com.groupstudy.global.response.ApiResponse;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -61,13 +63,18 @@ public class ToDoController {
         return ResponseEntity.ok(ApiResponse.onSuccessVoid());
     }
 
-    @GetMapping("/issues")
-    public ResponseEntity<ApiResponse<List<GitHubIssueDto>>> getGithubIssues(
-            @RequestParam String owner,
-            @RequestParam String repo
-    ) {
-        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getIssues(owner, repo)));
+    @GetMapping("/issues/{teamId}")
+    public ResponseEntity<ApiResponse<GithubIssueResponse>> getGithubIssues(@PathVariable Long teamId) {
+        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getIssues(teamId)));
     }
+
+//    @GetMapping("/issues/my")
+//    public ResponseEntity<ApiResponse<List<GitHubIssueDto>>> getMyGithubIssues(
+//            @RequestParam String owner,
+//            @RequestParam String repo
+//    ) {
+//        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getAssignedIssues(owner, repo)));
+//    }
 
     @GetMapping("/prs")
     public ResponseEntity<ApiResponse<List<GitHubPullRequestDto>>> getGithubPulls(
@@ -76,6 +83,26 @@ public class ToDoController {
     ) {
         return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getPullRequests(owner, repo)));
     }
+
+    @GetMapping("/prs/my/{teamId}")
+    public ResponseEntity<ApiResponse<GithubPrResponse>> getMyGithubPulls(
+        @PathVariable Long teamId) {
+        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getMyPullRequests(teamId)));
+    }
+
+    @GetMapping("/event/{teamId}")
+    public ResponseEntity<ApiResponse<GitHubOrgEventResponse>> getMyEvents(
+        @PathVariable Long teamId) {
+        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getIssueAndPrEvents(teamId)));
+    }
+
+    @GetMapping("/stat/{teamId}")
+    public ResponseEntity<ApiResponse<WeeklyDashboardResponse>> getOrgStats(
+            @PathVariable Long teamId) {
+        return ResponseEntity.ok(ApiResponse.onSuccess(gitHubClient.getStats(teamId, "kamillcream")));
+    }
+
+
     @GetMapping("/reviews")
     public ResponseEntity<ApiResponse<List<GitHubReviewCommentDto>>>  getReviews(
             @RequestParam String owner,

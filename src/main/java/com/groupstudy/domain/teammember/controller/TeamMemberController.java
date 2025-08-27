@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/roomusers")
+@RequestMapping("/teammembers")
 @CrossOrigin(value = "http://localhost:5173")
 public class TeamMemberController {
     private final TeamMemberCommandService teamMemberCommandService;
     private final TeamMemberQueryService teamMemberQueryService;
-
 
     @GetMapping("/{roomId}/code")
     public ResponseEntity<ApiResponse<String>> getOrCreateInviteCode(@PathVariable Long roomId){

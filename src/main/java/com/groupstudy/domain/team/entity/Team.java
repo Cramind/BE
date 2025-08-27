@@ -23,6 +23,9 @@ public class Team extends BaseEntity {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentTeam", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamMember> teamUsers;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentTeam", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TeamOrganization> teamOrganizations;
+
     public Team(String teamName, String teamDescription){
         this.teamName = teamName;
         this.teamDescription = teamDescription;

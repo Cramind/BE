@@ -23,6 +23,9 @@ public class GitHubIssueDto {
 
     private List<Label> labels;
 
+    @JsonProperty("pull_request")
+    private PullRequestLink pullRequest;
+
     @Getter
     public static class User {
         private String login;
@@ -40,5 +43,13 @@ public class GitHubIssueDto {
         private long id;
         private String name;
         private String color;
+    }
+
+    @Getter
+    public static class PullRequestLink {
+        private String url;
+        private String html_url;
+        private String diff_url;
+        private String patch_url;
     }
 }
