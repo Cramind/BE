@@ -1,5 +1,6 @@
 package com.groupstudy.global.config;
 
+import com.groupstudy.domain.auth.service.AuthService;
 import com.groupstudy.domain.user.repository.UserRepository;
 import com.groupstudy.global.jwt.CookieUtil;
 import com.groupstudy.global.jwt.JwtFilter;
@@ -37,7 +38,7 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
-    private final UserRepository userRepository;
+    private final AuthService authService;
     private final CookieUtil cookieUtil;
 
     @Bean
@@ -77,7 +78,7 @@ public class SecurityConfig {
                 );
         http
                 .addFilterBefore(new JwtFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class)
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, cookieUtil, userRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, cookieUtil, authService), UsernamePasswordAuthenticationFilter.class);
 
         http.sessionManagement(
                 session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
