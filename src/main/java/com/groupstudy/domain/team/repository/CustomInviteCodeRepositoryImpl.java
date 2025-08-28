@@ -1,9 +1,12 @@
 package com.groupstudy.domain.team.repository;
 
+import com.groupstudy.domain.team.entity.InviteCode;
 import com.groupstudy.domain.team.entity.QInviteCode;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,5 +30,13 @@ public class CustomInviteCodeRepositoryImpl implements CustomInviteCodeRepositor
                 .from(qInviteCode)
                 .where(qInviteCode.code.eq(code))
                 .fetchOne();
+    }
+
+    @Override
+    public Optional<InviteCode> findByCode(String code) {
+        QInviteCode qInviteCode = QInviteCode.inviteCode;
+        return Optional.ofNullable(queryFactory.selectFrom(qInviteCode)
+                .where(qInviteCode.code.eq(code))
+                .fetchOne());
     }
 }
