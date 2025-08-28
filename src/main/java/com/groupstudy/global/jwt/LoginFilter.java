@@ -3,11 +3,9 @@ package com.groupstudy.global.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.groupstudy.domain.auth.dto.request.LoginRequest;
-import com.groupstudy.domain.user.entity.User;
-import com.groupstudy.domain.user.repository.UserRepository;
+import com.groupstudy.domain.auth.service.AuthService;
 import com.groupstudy.global.auth.CustomUserDetails;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +25,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
+    private final AuthService authService;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, CookieUtil cookieUtil, UserRepository userRepository){
+    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, CookieUtil cookieUtil, AuthService authService){
         this.jwtUtil = jwtUtil;
         this.cookieUtil = cookieUtil;
+        this.authService = authService;
         super.setAuthenticationManager(authenticationManager);
     }
 
@@ -58,6 +58,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         log.info("Authentication successful...");
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        authService.onLoginSuccess(userDetails.getUserId());
         String email = userDetails.getEmail();
 
         response.addCookie(cookieUtil.createCookie("access", jwtUtil.createAccess(email)));
