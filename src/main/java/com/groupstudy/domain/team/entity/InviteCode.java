@@ -1,5 +1,6 @@
 package com.groupstudy.domain.team.entity;
 
+import com.groupstudy.domain.user.entity.User;
 import com.groupstudy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,6 +24,10 @@ public class InviteCode extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private LocalDateTime expiresAt;
 }
