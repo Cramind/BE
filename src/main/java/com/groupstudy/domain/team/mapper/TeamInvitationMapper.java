@@ -25,6 +25,7 @@ public interface TeamInvitationMapper {
     @Mapping(target = "teamName", source = "team.teamName")
     @Mapping(target = "teamDescription", source = "team.teamDescription")
     @Mapping(target = "invitor", source = "user.name")
+    @Mapping(target = "teamMembers", source = "teamMembers")
     TeamInvitationInfoResponse toInvitationInfoResponse(Team team, User user,
                                                         Integer teamMemberCnt, Integer activeMemberCnt,
                                                         List<String> teamMembers);

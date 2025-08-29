@@ -21,7 +21,7 @@ public class Team extends BaseEntity {
     private String teamDescription;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentTeam", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TeamMember> teamUsers;
+    private List<TeamMember> teamMembers;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentTeam", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamOrganization> teamOrganizations;

@@ -42,15 +42,18 @@ public class TeamMemberCommandService {
         return BASE_URL + optionalInviteCode;
     }
 
-    public void insertRoomUser(String inviteCode, CustomUserDetails customUserDetails){
+    public Long insertRoomUser(String inviteCode, CustomUserDetails customUserDetails){
         User user = userRepository.findByEmail(customUserDetails.getEmail());
         Long studyRoomId = inviteCodeRepository.findStudyRoomByCode(inviteCode);
 
         Team team = teamRepository.findById(studyRoomId).orElseThrow();
 
-        TeamMember roomUsers = createRoomUser(user, team);
+        if (!teamMemberRepository.existsByTeamAndUser(team, user)){
+            TeamMember roomUsers = createRoomUser(user, team);
+            teamMemberRepository.save(roomUsers);
+        }
 
-        teamMemberRepository.save(roomUsers);
+        return team.getId();
     }
 
     private TeamMember createRoomUser(User user, Team team){

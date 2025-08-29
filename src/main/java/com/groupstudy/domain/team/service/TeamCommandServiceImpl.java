@@ -62,13 +62,13 @@ public class TeamCommandServiceImpl implements TeamCommandService{
         InviteCode inviteCodeEtt = inviteCodeOpt.get();
         Team team = inviteCodeEtt.getTeam();
         User invitor = inviteCodeEtt.getUser();
-        List<String> teamMemberList = team.getTeamUsers()
+        List<String> teamMemberList = team.getTeamMembers()
                 .stream().map(
                         teamMember -> {
                             return teamMember.getUser().getName();
                         }
                 ).toList();
-        Integer activeUserCnt = team.getTeamUsers()
+        Integer activeUserCnt = team.getTeamMembers()
                 .stream().mapToInt(
                         teamMember -> {
                             return teamMember.getUser().isLogin() ? 1 : 0;
