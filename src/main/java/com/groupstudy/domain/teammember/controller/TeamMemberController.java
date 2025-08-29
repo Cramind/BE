@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/teammembers")
+@RequestMapping("/api/teammembers")
 @CrossOrigin(value = "http://localhost:5173")
 public class TeamMemberController {
     private final TeamMemberCommandService teamMemberCommandService;
@@ -24,10 +24,9 @@ public class TeamMemberController {
     }
 
     @PostMapping("/{code}")
-    public ResponseEntity<ApiResponse<Void>> inviteUserToRoom(@PathVariable String code,
+    public ResponseEntity<ApiResponse<Long>> inviteUserToRoom(@PathVariable String code,
                                  @AuthenticationPrincipal CustomUserDetails customUserDetails){
-        teamMemberCommandService.insertRoomUser(code, customUserDetails);
-        return ResponseEntity.ok(ApiResponse.onSuccessVoid());
+        return ResponseEntity.ok(ApiResponse.onSuccess(teamMemberCommandService.insertRoomUser(code, customUserDetails)));
     }
 
 //    @GetMapping
