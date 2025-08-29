@@ -1,6 +1,8 @@
 package com.groupstudy.domain.teammember.repository;
 
+import com.groupstudy.domain.team.entity.Team;
 import com.groupstudy.domain.teammember.entity.QTeamMember;
+import com.groupstudy.domain.user.entity.User;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -22,5 +24,15 @@ public class CustomTeamMemberRepositoryImpl implements CustomTeamMemberRepositor
                 .from(qTeamMember)
                 .where(qTeamMember.id.eq(userId))
                 .fetch();
+    }
+
+    @Override
+    public boolean existsByTeamAndUser(Team team, User user) {
+        QTeamMember qTeamMember = QTeamMember.teamMember;
+
+        return queryFactory.selectOne()
+                .from(qTeamMember)
+                .where(qTeamMember.parentTeam.eq(team), qTeamMember.user.eq(user))
+                .fetchFirst() != null;
     }
 }
